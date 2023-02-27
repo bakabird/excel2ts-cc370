@@ -9,10 +9,10 @@ export namespace DataManager {
     // export let AIDatas: Array<AIData>;
     // export let AIDatasById: { [key: number]: AIData };
     @@varDefined
-    //Datas 不要手动修改1
-    export function init(): void {
-        if(CC_EDITOR) return;
-        let datas=require("Datas.js");
+        //Datas 不要手动修改1
+        export function init(): void {
+        if (CC_EDITOR) return;
+        let datas = require("Datas.js");
         //Datas 不要手动修改2 变量的赋值
         //for example: 
         // AIDatas = datas["AI"];

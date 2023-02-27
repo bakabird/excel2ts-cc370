@@ -1,30 +1,63 @@
 {
-  "name": "excel2ts",
-  "version": "1.1.1",
-  "description": "The package template for getting started.",
-  "author": "Cocos Creator",
-  "main": "main.js",
-  "main-menu": {
-    "i18n:MAIN_MENU.package.title/excel2ts": {
-      "accelerator": "CmdOrCtrl+Shift+v",
-      "message": "excel2ts:open"
+    "package_version": 2,
+    "version": "1.0.0",
+    "name": "excel2ts-cc370",
+    "description": "i18n:excel2ts-cc370.description",
+    "main": "./dist/main.js",
+    "dependencies": {
+        "@brandless/tsbeautify": "0.0.8",
+        "chokidar": "^2.0.2",
+        "fs-extra": "^10.0.0",
+        "json-beautifully": "^1.0.3",
+        "node-xlsx": "^0.21.0",
+        "uglify-js": "^3.17.4",
+        "vue": "^3.1.4"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^9.0.5",
+        "@types/node": "^16.0.1",
+        "typescript": "^4.3.4"
+    },
+    "panels": {
+        "default": {
+            "title": "excel2ts-cc370",
+            "type": "dockable",
+            "main": "dist/panels/default",
+            "size": {
+                "width": 500,
+                "height": 700,
+                "min-height": 700,
+                "min-width": 500
+            }
+        }
+    },
+    "contributions": {
+        "menu": [
+            {
+                "path": "i18n:menu.panel",
+                "label": "i18n:excel2ts-cc370.open_panel",
+                "message": "excel2ts:open"
+            }
+        ],
+        "messages": {
+            "excel2ts:open": {
+                "methods": [
+                    "openPanel"
+                ]
+            }
+        },
+        "shortcuts": [
+            {
+                "message": "excel2ts:open",
+                "win": "ctrl+shift+v",
+                "mac": "ctrl+shift+v"
+            }
+        ]
+    },
+    "author": "bakabrid",
+    "editor": ">=3.7.0",
+    "scripts": {
+        "build": "tsc -b",
+        "watch": "tsc -w"
     }
-  },
-  "panel": {
-    "main": "panel/index.js",
-    "type": "dockable",
-    "title": "excel2ts",
-    "width": 500,
-    "height": 700,
-    "min-height": 700,
-    "min-width": 500
-  },
-  "dependencies": {
-    "@brandless/tsbeautify": "0.0.8",
-    "chokidar": "^2.0.2",
-    "fs-extra": "^5.0.0",
-    "json-beautifully": "^1.0.3",
-    "node-xlsx": "^0.11.2",
-    "uglify-js": "^3.3.14"
-  }
 }
