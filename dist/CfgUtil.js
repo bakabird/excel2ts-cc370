@@ -58,7 +58,7 @@ class CfgUtil {
 }
 exports.default = CfgUtil;
 CfgUtil.cfgData = {
-    excelRootPath: null, // excel根路径
+    excelRootPath: "project://", // excel根路径
 };
 // module.exports = {
 //     cfgData: {

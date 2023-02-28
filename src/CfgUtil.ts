@@ -7,14 +7,14 @@ import electron from "electron"
 
 export default class CfgUtil {
     public static cfgData: Record<string, any> = {
-        excelRootPath: null,// excel根路径
+        excelRootPath: "project://",// excel根路径
     }
-    public static initCfg(cb?: (data: any)=>void) {
+    public static initCfg(cb?: (data: any) => void) {
         let configFilePath = this._getAppCfgPath();
         let b = fs.existsSync(configFilePath);
         if (b) {
             console.log("cfg path: " + configFilePath);
-            fs.readFile(configFilePath, 'utf-8', (err, data)=>{
+            fs.readFile(configFilePath, 'utf-8', (err, data) => {
                 if (!err) {
                     let saveData = JSON.parse(data.toString());
                     this.cfgData = saveData;
@@ -29,7 +29,7 @@ export default class CfgUtil {
             }
         }
     }
-    public static saveCfgByData(data:Record<string, any>) {
+    public static saveCfgByData(data: Record<string, any>) {
         Object.keys(data).forEach(v => {
             this.cfgData[v] = data[v];
         });

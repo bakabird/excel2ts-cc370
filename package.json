@@ -24,10 +24,10 @@
             "type": "dockable",
             "main": "dist/panels/default",
             "size": {
-                "width": 500,
+                "width": 400,
                 "height": 700,
-                "min-height": 700,
-                "min-width": 500
+                "min-height": 50,
+                "min-width": 400
             }
         }
     },
@@ -50,7 +50,7 @@
             {
                 "message": "excel2ts:open",
                 "win": "ctrl+shift+v",
-                "mac": "ctrl+shift+v"
+                "mac": "cmd+shift+v"
             }
         ]
     },

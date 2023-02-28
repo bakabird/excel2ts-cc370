@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import path from 'path';
-import { createApp, App } from 'vue';
+import { createApp, App, ref } from 'vue';
 import chokidar from "chokidar"
 import CfgUtil from '../../CfgUtil';
 import * as nodeXlsx from 'node-xlsx';
@@ -34,21 +34,20 @@ module.exports = Editor.Panel.define({
         logTextArea: '#logTextArea',
     },
     methods: {
-        hello() {
-            // if (this.$.text) {
-            //     this.$.text.innerHTML = 'hello';
-            //     console.log('[cocos-panel-html.default]: hello');
-            // }
-        },
+        // hello() {
+        // if (this.$.text) {
+        //     this.$.text.innerHTML = 'hello';
+        //     console.log('[cocos-panel-html.default]: hello');
+        // }
+        // },
     },
     ready() {
-        let logCtrl = this.$.logTextArea!;
+        let logCtrl = this.$.logTextArea as any;
         let logListScrollToBottom = function () {
             setTimeout(function () {
                 logCtrl.scrollTop = logCtrl.scrollHeight;
             }, 10);
         };
-
         const app = createApp({});
         app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith('ui-');
         app.component('excel-item', {
@@ -63,18 +62,45 @@ module.exports = Editor.Panel.define({
         })
         app.component('MyApp', {
             template: fs.readFileSync(joinPack('static/template/vue/app.html'), 'utf-8'),
-            created() {
-
+            setup() {
+                const tsDir = ref(0);
+                const excelDir = ref(0);
+                // 返回值会暴露给模板和其他的选项式 API 钩子
+                return {
+                    tsDir,
+                    excelDir,
+                }
             },
             data() {
                 return {
                     logView: "",
-                    excelRootPath: null,
-                    configPath: null,
+                    excelRootPath: "project://",
+                    configPath: "project://",
                     isCompressJs: false,  //是否将数据文件打包成json
                     excelArray: [],
                     excelFileArr: [],
-                };
+                }
+            },
+            mounted() {
+                this._initPluginCfg();
+            },
+            computed: {
+                rawConfigPath() {
+                    return Editor.UI.File.resolveToRaw(this.configPath);
+                },
+                rawExcelRootPath() {
+                    if (this.excelRootPath) {
+                        return Editor.UI.File.resolveToRaw(this.excelRootPath);
+                    } else {
+                        return null;
+                    }
+                },
+            },
+            watch: {
+                // 侦听根级属性
+                logView(val, oldVal) {
+                    logCtrl.value = val;
+                }
             },
             methods: {
                 _addLog(str: string) {
@@ -82,102 +108,119 @@ module.exports = Editor.Panel.define({
                     this.logView += "[" + time.toLocaleString() + "]: " + str + "\n";
                     logListScrollToBottom();
                 },
-                onBtnClickTellMe() {
-                    let url = "http://wpa.qq.com/msgrd?v=3&uin=654088761&site=qq&menu=yes";
-                    Electron.shell.openExternal(url);
-                },
 
                 _watchDir(event: string, filePath: string) {
+                    console.log(event)
                     let ext = path.extname(filePath);
                     if (ext === ".xlsx" || ext === ".xls") {
-                        this._onAnalyzeExcelDirPath(this.excelRootPath);
+                        this._onAnalyzeExcelDirPath(this.rawExcelRootPath);
                     }
                 },
 
                 _initPluginCfg() {
                     CfgUtil.initCfg((data) => {
+                        this.tsDir.protocol = "project"
+                        this.excelDir.protocol = "project"
                         if (data) {
                             this.excelRootPath = data.excelRootPath;
-                            this.configPath = data.configPath || path.join(Editor.Project.path, "config");;
+                            this.configPath = data.configPath || "project://";
                             this.isCompressJs = data.isCompressJs || false;
-                            if (fs.existsSync(this.excelRootPath)) {
-                                this._addLog(`检测并监视文件夹-----${this.excelRootPath}`);
-                                chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
+                            console.log(this.excelRootPath)
+                            console.log(this.rawExcelRootPath)
+                            if (this.excelRootPath && fs.existsSync(this.rawExcelRootPath)) {
+                                this._addLog(`检测并监视文件夹-----${this.rawExcelRootPath}`);
+                                chokidar.watch(this.rawExcelRootPath).on('all', this._watchDir.bind(this));
                             }
+
+                            this.tsDir.value = this.configPath;
+                            this.excelDir.value = this.excelRootPath;
                         }
                     });
                 },
-                onBtnClickOpenExcelRootPath() {
-                    if (fs.existsSync(this.excelRootPath)) {
-                        Electron.shell.openPath(this.excelRootPath).then(err => {
-                            Electron.shell.beep()
-                        });
-                    } else {
-                        this._addLog("目录不存在：" + this.excelRootPath);
-                    }
+                // onBtnClickOpenExcelRootPath() {
+                //     if (fs.existsSync(this.excelRootPath)) {
+                //         Electron.shell.openPath(this.excelRootPath).then(err => {
+                //             Electron.shell.beep()
+                //         });
+                //     } else {
+                //         this._addLog("目录不存在：" + this.excelRootPath);
+                //     }
+                // },
+                // onBtnClickSelectExcelRootPath() {
+                //     Editor.Dialog.select({
+                //         title: "选择Excel的根目录",
+                //         // defaultPath: this.excelRootPath,
+                //         path: this.excelRootPath,
+                //         // properties: ['openDirectory'],
+                //         type: "directory",
+                //     }).then(res => {
+                //         if (!res.canceled && res.filePaths.length > 0) {
+                //             let dir = res.filePaths[0];
+                //             if (dir !== this.excelRootPath) {
+                //                 this.excelRootPath = dir;
+                //                 this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
+                //                 chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
+                //                 CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
+                //             }
+                //         }
+                //     })
+                //     // if (res !== -1) {
+                //     //     let dir = res[0];
+                //     //     if (dir !== this.excelRootPath) {
+                //     //         this.excelRootPath = dir;
+                //     //         this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
+                //     //         chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
+                //     //         CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
+                //     //     }
+                //     // }
+                // },
+                onConfirmConfigPath(dir: string) {
+                    console.log("confirm config path: " + dir);
+                    this.configPath = dir;
+                    CfgUtil.saveCfgByData({ configPath: this.configPath });
                 },
-                onBtnClickSelectExcelRootPath() {
-                    Editor.Dialog.select({
-                        title: "选择Excel的根目录",
-                        // defaultPath: this.excelRootPath,
-                        path: this.excelRootPath,
-                        // properties: ['openDirectory'],
-                        type: "directory",
-                    }).then(res => {
-                        if (!res.canceled && res.filePaths.length > 0) {
-                            let dir = res.filePaths[0];
-                            if (dir !== this.excelRootPath) {
-                                this.excelRootPath = dir;
-                                this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                                chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                                CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                            }
-                        }
-                    })
-                    // if (res !== -1) {
-                    //     let dir = res[0];
-                    //     if (dir !== this.excelRootPath) {
-                    //         this.excelRootPath = dir;
-                    //         this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                    //         chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                    //         CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                    //     }
-                    // }
+                onConfirmExcelRootPath(dir: string) {
+                    console.log("confirm excel root path: " + dir);
+                    this.excelRootPath = dir;
+                    CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
+                    this._addLog(`改动成功,检测并监视文件夹-----${this.rawExcelRootPath}`);
+                    chokidar.watch(this.rawExcelRootPath).on('all', this._watchDir.bind(this));
                 },
-                onBtnClickSelectConfigPath() {
-                    Editor.Dialog.select({
-                        title: "选择导出的配置目录",
-                        path: Editor.Project.path,
-                        // defaultPath: Editor.Project.path,
-                        type: "directory",
-                        // properties: ['openDirectory'],
-                    }).then(res => {
-                        if (!res.canceled && res.filePaths.length > 0) {
-                            let dir = res.filePaths[0];
-                            if (dir !== this.configPath) {
-                                this.configPath = dir;
-                                CfgUtil.saveCfgByData({ configPath: this.configPath });
-                            }
-                        }
-                    });
-                    // let res = Editor.Dialog.openFile({
-                    //     title: "选择导出的配置目录",
-                    //     defaultPath: Editor.Project.path,
-                    //     properties: ['openDirectory'],
-                    // });
-                    // if (res !== -1) {
-                    //     let dir = res[0];
-                    //     if (dir !== this.configPath) {
-                    //         this.configPath = dir;
-                    //         CfgUtil.saveCfgByData({ configPath: this.configPath });
-                    //     }
-                    // }
-                },
-                onBtnIsCompressJsCheck(event: any) {
+                onConfirmCompressJs(event: any) {
                     console.log("onBtnIsCompressJsCheck " + event.target.value);
                     this.isCompressJs = event.target.value;
                     CfgUtil.saveCfgByData({ isCompressJs: this.isCompressJs });
                 },
+                // onBtnClickSelectConfigPath() {
+                //     Editor.Dialog.select({
+                //         title: "选择导出的配置目录",
+                //         path: Editor.Project.path,
+                //         // defaultPath: Editor.Project.path,
+                //         type: "directory",
+                //         // properties: ['openDirectory'],
+                //     }).then(res => {
+                //         if (!res.canceled && res.filePaths.length > 0) {
+                //             let dir = res.filePaths[0];
+                //             if (dir !== this.configPath) {
+                //                 this.configPath = dir;
+                //                 CfgUtil.saveCfgByData({ configPath: this.configPath });
+                //             }
+                //         }
+                //     });
+                //     // let res = Editor.Dialog.openFile({
+                //     //     title: "选择导出的配置目录",
+                //     //     defaultPath: Editor.Project.path,
+                //     //     properties: ['openDirectory'],
+                //     // });
+                //     // if (res !== -1) {
+                //     //     let dir = res[0];
+                //     //     if (dir !== this.configPath) {
+                //     //         this.configPath = dir;
+                //     //         CfgUtil.saveCfgByData({ configPath: this.configPath });
+                //     //     }
+                //     // }
+                // },
+
                 // 查找出目录下的所有excel文件
                 _onAnalyzeExcelDirPath(dir: string) {
                     if (dir) {
@@ -248,23 +291,23 @@ module.exports = Editor.Panel.define({
                         this.excelArray[k].isUse = b;
                     }
                 },
-                onBtnClickOpenJsonSavePath() {
-                    if (fs.existsSync(this.jsonSavePath)) {
-                        Electron.shell.showItemInFolder(this.jsonSavePath);
-                        Electron.shell.beep();
-                    } else {
-                        this._addLog("目录不存在：" + this.jsonSavePath);
-                    }
-                },
-                onBtnClickOpenJsSavePath() {
-                    if (fs.existsSync(this.configPath)) {
-                        Electron.shell.openPath(this.configPath).then(ret => {
-                            Electron.shell.beep();
-                        });
-                    } else {
-                        this._addLog("目录不存在：" + this.configPath);
-                    }
-                },
+                // onBtnClickOpenJsonSavePath() {
+                //     if (fs.existsSync(this.jsonSavePath)) {
+                //         Electron.shell.showItemInFolder(this.jsonSavePath);
+                //         Electron.shell.beep();
+                //     } else {
+                //         this._addLog("目录不存在：" + this.jsonSavePath);
+                //     }
+                // },
+                // onBtnClickOpenJsSavePath() {
+                //     if (fs.existsSync(this.configPath)) {
+                //         Electron.shell.openPath(this.configPath).then(ret => {
+                //             Electron.shell.beep();
+                //         });
+                //     } else {
+                //         this._addLog("目录不存在：" + this.configPath);
+                //     }
+                // },
                 // _getScriptSaveData(excelData: string[], itemSheet) {
                 //     let title = excelData[0];  //
                 //     let sheetFormatData = {};
@@ -320,24 +363,31 @@ module.exports = Editor.Panel.define({
                             typeStr += `export interface ${sheetName}Data{`
                             for (let i = 0; i < type.length; i++) {
                                 let varName = title[i];
-                                let columDesc = desc[i];
+                                let columDesc: string[] = desc[i].split("\n");
                                 let columType = type[i];
                                 let lowType = columType.toLowerCase();
                                 if (typeEnum.includes(lowType)) {
+                                    typeStr += "\n";
+                                    if (columDesc.length < 2) {
+                                        typeStr += `/** ${columDesc} */`
+                                    } else {
+                                        typeStr += `/**\n` + columDesc.map(l => "\t * " + l).join("\n") + "\n\t */"
+                                    }
+                                    typeStr += "\n";
                                     typeStr += `${varName}:`
-                                    columDesc = columDesc == undefined ? "\n" : "//" + columDesc + "\n";
+                                    // columDesc == undefined ? "\n" : "//" + columDesc + "\n";
                                     switch (lowType) {
                                         case "string":
-                                            typeStr += `string;   ${columDesc}`;
+                                            typeStr += `string;`;
                                             break;
                                         case "number":
-                                            typeStr += `number; ${columDesc}`;
+                                            typeStr += `number;`;
                                             break;
                                         case "list<number>":
-                                            typeStr += `Array<number>; ${columDesc}`;
+                                            typeStr += `Array<number>;`;
                                             break;
                                         case "list<string>":
-                                            typeStr += `Array<string>; ${columDesc}`;
+                                            typeStr += `Array<string>;`;
                                             break;
                                     }
                                 } else {
@@ -350,7 +400,7 @@ module.exports = Editor.Panel.define({
                     //todo 
                     let beautifier = new TsBeautifier();
                     let result = beautifier.Beautify(typeStr)!;
-                    fs.writeFileSync(path.join(this.configPath, "ConfigTypeDefind.ts"), result);
+                    fs.writeFileSync(path.join(this.rawConfigPath, "ConfigTypeDefind.ts"), result);
                     return typeStr;
                 },
                 // 生成配置
@@ -362,7 +412,7 @@ module.exports = Editor.Panel.define({
                     }
                     this.logView = "";
                     // 删除老的配置
-                    fs.emptyDirSync(this.configPath);
+                    // fs.emptyDirSync(this.rawConfigPath);
                     // let jsSaveData = {};// 保存的js数据
                     this._addLog("excel 数量:" + this.excelArray.length);
                     //选取第一个sheet
@@ -388,7 +438,7 @@ module.exports = Editor.Panel.define({
                     this._addLog("全部转换完成!");
                 },
                 addMainDatas(excelCache: ExcelCache) {
-                    let saveStr = "module.exports=";
+                    let saveStr = "export default ";
                     let jsSaveData: any = {};
                     Object.getOwnPropertyNames(excelCache).forEach(key => {
                         // 保存为ts
@@ -402,7 +452,7 @@ module.exports = Editor.Panel.define({
                                 for (let i = 3; i < sheetData.data.length; i++) {
                                     let keyMap: Record<string, any> = {};
                                     //有可能出现id为空的情况(可能是完全的空行)
-                                    if (!sheetData.data[i][0]) {
+                                    if (sheetData.data[i][0] == null || sheetData.data[i][0] == undefined) {
                                         continue;
                                     }
                                     for (let j = 0; j < attrLength; j++) {
@@ -445,7 +495,7 @@ module.exports = Editor.Panel.define({
                             }
                         });
                     });
-                    let saveFileFullPath = path.join(this.configPath, "Datas.js");
+                    let saveFileFullPath = path.join(this.rawConfigPath, "Config.ts");
                     saveStr += JSON.stringify(jsSaveData);
                     let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
                         output: {
@@ -466,7 +516,7 @@ module.exports = Editor.Panel.define({
                     let importContent = "";
                     let defindContent = "";
                     let funcContent = "";
-                    let dmUrl = joinPack("model/DataManager.ts");
+                    let dmUrl = joinPack("model/Cfg.ts");
                     // let dmUrl = Editor.url('packages://' + packageName + '//model//DataManager.ts', 'utf8');
                     let clazData = fs.readFileSync(dmUrl, { encoding: "utf-8" });
                     Object.getOwnPropertyNames(excelCache).forEach(key => {
@@ -489,10 +539,10 @@ module.exports = Editor.Panel.define({
                             // export let AIDatas: Array<AIData>;
                             // export let AIDatasById: { [key: number]: AIData };
                             importContent += `import {${sheetName}Data} from "./ConfigTypeDefind";\n`;
-                            defindContent += `export let ${sheetName}DatasArray:Array<${sheetName}Data>;\n`;
-                            defindContent += `export let ${sheetName}DatasById:{[key in ${idType}]:${sheetName}Data};\n`;
-                            funcContent += `        ${sheetName}DatasArray=arrayData("${sheetName}",datas);\n`;
-                            funcContent += `        ${sheetName}DatasById=datas["${sheetName}"];\n`;
+                            defindContent += `public static ${sheetName}DatasArray: Array<${sheetName}Data>;\n`;
+                            defindContent += `public static ${sheetName}DatasById: { [key in ${idType}]: ${sheetName}Data };\n`;
+                            funcContent += `        this.${sheetName}DatasArray = this._arrayData("${sheetName}", datas);\n`;
+                            funcContent += `        this.${sheetName}DatasById = datas["${sheetName}"];\n`;
                             // AIDatas = datas["AI"];
                             // AIDatasById = getsById<AIData>(AIDatas);
                         });
@@ -502,7 +552,7 @@ module.exports = Editor.Panel.define({
                     clazData = clazData.replace("@@funcContent", funcContent);
                     //  let beautifier = new TsBeautifier();
                     let result = clazData; // beautifier.Beautify(clazData);
-                    fs.writeFileSync(path.join(this.configPath, "DataManager.ts"), result);
+                    fs.writeFileSync(path.join(this.rawConfigPath, "Cfg.ts"), result);
                 }
             },
         });
