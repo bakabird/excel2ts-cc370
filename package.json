@@ -60,6 +60,7 @@
     "editor": ">=3.7.0",
     "scripts": {
         "build": "tsc -b",
-        "watch": "tsc -w"
+        "watch": "tsc -w",
+        "pack": "gulp zip"
     }
 }

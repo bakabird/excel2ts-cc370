@@ -1,7 +1,7 @@
 import datas from './Config';
 @@import
 
-export default class Cfg {
+export default class Xls {
     @@varDefined
 
     public static init() {

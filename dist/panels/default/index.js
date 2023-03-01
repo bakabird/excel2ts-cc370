@@ -26,13 +26,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const tsbeautify_1 = require("@brandless/tsbeautify");
+const chokidar_1 = __importDefault(require("chokidar"));
 const fs = __importStar(require("fs-extra"));
+const nodeXlsx = __importStar(require("node-xlsx"));
 const path_1 = __importDefault(require("path"));
 const vue_1 = require("vue");
-const chokidar_1 = __importDefault(require("chokidar"));
 const CfgUtil_1 = __importDefault(require("../../CfgUtil"));
-const nodeXlsx = __importStar(require("node-xlsx"));
-const tsbeautify_1 = require("@brandless/tsbeautify");
 const uglifyJs = require("uglify-js");
 const join = path_1.default.join;
 const joinPack = (...arg) => {
@@ -548,7 +548,7 @@ module.exports = Editor.Panel.define({
                     let importContent = "";
                     let defindContent = "";
                     let funcContent = "";
-                    let dmUrl = joinPack("model/Cfg.ts");
+                    let dmUrl = joinPack("model/Xls.ts");
                     // let dmUrl = Editor.url('packages://' + packageName + '//model//DataManager.ts', 'utf8');
                     let clazData = fs.readFileSync(dmUrl, { encoding: "utf-8" });
                     Object.getOwnPropertyNames(excelCache).forEach(key => {
@@ -582,7 +582,7 @@ module.exports = Editor.Panel.define({
                     clazData = clazData.replace("@@funcContent", funcContent);
                     //  let beautifier = new TsBeautifier();
                     let result = clazData; // beautifier.Beautify(clazData);
-                    fs.writeFileSync(path_1.default.join(this.rawConfigPath, "Cfg.ts"), result);
+                    fs.writeFileSync(path_1.default.join(this.rawConfigPath, "Xls.ts"), result);
                 }
             },
         });

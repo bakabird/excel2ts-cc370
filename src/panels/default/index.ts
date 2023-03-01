@@ -1,11 +1,10 @@
-import * as fs from 'fs-extra';
-import path from 'path';
-import { createApp, App, ref } from 'vue';
-import chokidar from "chokidar"
-import CfgUtil from '../../CfgUtil';
-import * as nodeXlsx from 'node-xlsx';
 import { TsBeautifier } from '@brandless/tsbeautify';
-import Electron from 'electron';
+import chokidar from "chokidar";
+import * as fs from 'fs-extra';
+import * as nodeXlsx from 'node-xlsx';
+import path from 'path';
+import { App, createApp, ref } from 'vue';
+import CfgUtil from '../../CfgUtil';
 const uglifyJs = require("uglify-js")
 
 type ExcelCache = Record<string, {
@@ -516,7 +515,7 @@ module.exports = Editor.Panel.define({
                     let importContent = "";
                     let defindContent = "";
                     let funcContent = "";
-                    let dmUrl = joinPack("model/Cfg.ts");
+                    let dmUrl = joinPack("model/Xls.ts");
                     // let dmUrl = Editor.url('packages://' + packageName + '//model//DataManager.ts', 'utf8');
                     let clazData = fs.readFileSync(dmUrl, { encoding: "utf-8" });
                     Object.getOwnPropertyNames(excelCache).forEach(key => {
@@ -552,7 +551,7 @@ module.exports = Editor.Panel.define({
                     clazData = clazData.replace("@@funcContent", funcContent);
                     //  let beautifier = new TsBeautifier();
                     let result = clazData; // beautifier.Beautify(clazData);
-                    fs.writeFileSync(path.join(this.rawConfigPath, "Cfg.ts"), result);
+                    fs.writeFileSync(path.join(this.rawConfigPath, "Xls.ts"), result);
                 }
             },
         });
