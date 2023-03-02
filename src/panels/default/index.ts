@@ -136,43 +136,6 @@ module.exports = Editor.Panel.define({
                         }
                     });
                 },
-                // onBtnClickOpenExcelRootPath() {
-                //     if (fs.existsSync(this.excelRootPath)) {
-                //         Electron.shell.openPath(this.excelRootPath).then(err => {
-                //             Electron.shell.beep()
-                //         });
-                //     } else {
-                //         this._addLog("目录不存在：" + this.excelRootPath);
-                //     }
-                // },
-                // onBtnClickSelectExcelRootPath() {
-                //     Editor.Dialog.select({
-                //         title: "选择Excel的根目录",
-                //         // defaultPath: this.excelRootPath,
-                //         path: this.excelRootPath,
-                //         // properties: ['openDirectory'],
-                //         type: "directory",
-                //     }).then(res => {
-                //         if (!res.canceled && res.filePaths.length > 0) {
-                //             let dir = res.filePaths[0];
-                //             if (dir !== this.excelRootPath) {
-                //                 this.excelRootPath = dir;
-                //                 this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                //                 chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                //                 CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                //             }
-                //         }
-                //     })
-                //     // if (res !== -1) {
-                //     //     let dir = res[0];
-                //     //     if (dir !== this.excelRootPath) {
-                //     //         this.excelRootPath = dir;
-                //     //         this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                //     //         chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                //     //         CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                //     //     }
-                //     // }
-                // },
                 onConfirmConfigPath(dir: string) {
                     console.log("confirm config path: " + dir);
                     this.configPath = dir;
@@ -190,35 +153,6 @@ module.exports = Editor.Panel.define({
                     this.isCompressJs = event.target.value;
                     CfgUtil.saveCfgByData({ isCompressJs: this.isCompressJs });
                 },
-                // onBtnClickSelectConfigPath() {
-                //     Editor.Dialog.select({
-                //         title: "选择导出的配置目录",
-                //         path: Editor.Project.path,
-                //         // defaultPath: Editor.Project.path,
-                //         type: "directory",
-                //         // properties: ['openDirectory'],
-                //     }).then(res => {
-                //         if (!res.canceled && res.filePaths.length > 0) {
-                //             let dir = res.filePaths[0];
-                //             if (dir !== this.configPath) {
-                //                 this.configPath = dir;
-                //                 CfgUtil.saveCfgByData({ configPath: this.configPath });
-                //             }
-                //         }
-                //     });
-                //     // let res = Editor.Dialog.openFile({
-                //     //     title: "选择导出的配置目录",
-                //     //     defaultPath: Editor.Project.path,
-                //     //     properties: ['openDirectory'],
-                //     // });
-                //     // if (res !== -1) {
-                //     //     let dir = res[0];
-                //     //     if (dir !== this.configPath) {
-                //     //         this.configPath = dir;
-                //     //         CfgUtil.saveCfgByData({ configPath: this.configPath });
-                //     //     }
-                //     // }
-                // },
 
                 // 查找出目录下的所有excel文件
                 _onAnalyzeExcelDirPath(dir: string) {
@@ -290,56 +224,7 @@ module.exports = Editor.Panel.define({
                         this.excelArray[k].isUse = b;
                     }
                 },
-                // onBtnClickOpenJsonSavePath() {
-                //     if (fs.existsSync(this.jsonSavePath)) {
-                //         Electron.shell.showItemInFolder(this.jsonSavePath);
-                //         Electron.shell.beep();
-                //     } else {
-                //         this._addLog("目录不存在：" + this.jsonSavePath);
-                //     }
-                // },
-                // onBtnClickOpenJsSavePath() {
-                //     if (fs.existsSync(this.configPath)) {
-                //         Electron.shell.openPath(this.configPath).then(ret => {
-                //             Electron.shell.beep();
-                //         });
-                //     } else {
-                //         this._addLog("目录不存在：" + this.configPath);
-                //     }
-                // },
-                // _getScriptSaveData(excelData: string[], itemSheet) {
-                //     let title = excelData[0];  //
-                //     let sheetFormatData = {};
-                //     let type = excelData[2];
-                //     for (let i = 3; i < excelData.length; i++) {
-                //         let lineData = excelData[i];
-                //         let saveLineData = {};
-                //         for (let j = 1; j < title.length; j++) {
-                //             let key = title[j];
-                //             let value = lineData[j];
-                //             if (value === undefined) {
-                //                 value = null;
-                //                 this._addLog("[Error] 发现空单元格:" + itemSheet.name + "*" + itemSheet.sheet + " => (" + key + "," + (i + 1) + ")");
-                //             } else if (type[j].toLowerCase().startsWith("list")) {
-                //                 value = value ? (value + "").split(",") : [];
-                //                 let innerType = type[j].toLowerCase().match(/[^<]\w+(?=>)/)[0];
-                //                 if (innerType === "number") {
-                //                     value = value.reduce((array, cur, index) => {
-                //                         array.push(Number(cur));
-                //                         return array;
-                //                     }, []);
-                //                 }
-                //             }
-                //             saveLineData[key] = value;
-                //         }
-                //         if (!lineData[0]) {
-                //             this._addLog("[Error] 发现id是空的单元格,将被忽略并跳过后面的数据:" + itemSheet.name + "*" + itemSheet.sheet);
-                //             break;
-                //         }
-                //         sheetFormatData[lineData[0].toString()] = saveLineData;
-                //     }
-                //     return sheetFormatData;
-                // },
+
                 /**
                  * 
                  * @param {*} excelData 
@@ -557,31 +442,6 @@ module.exports = Editor.Panel.define({
         });
         app.mount(this.$.app!);
         panelDataMap.set(this, app);
-
-        // if (this.$.text) {
-        //     this.$.text.innerHTML = 'Hello Cocos.';
-        // }
-        // if (this.$.app) {
-        //     const app = createApp({});
-        //     app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith('ui-');
-        //     app.component('MyCounter', {
-        //         template: readFileSync(join(__dirname, '../../../static/template/vue/counter.html'), 'utf-8'),
-        //         data() {
-        //             return {
-        //                 counter: 0,
-        //             };
-        //         }, methods: {
-        //             addition() {
-        //                 this.counter += 1;
-        //             },
-        //             subtraction() {
-        //                 this.counter -= 1;
-        //             },
-        //         },
-        //     });
-        //     app.mount(this.$.app);
-        //     panelDataMap.set(this, app);
-        // }
     },
     beforeClose() { },
     close() {
