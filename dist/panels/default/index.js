@@ -39,6 +39,10 @@ const joinPack = (...arg) => {
     return join(__dirname, '../../../', ...arg);
 };
 const panelDataMap = new WeakMap();
+const CONST = {
+    TYPENUM_PREFIX: "wqidhd98213uhj89wqe",
+    TYPENUM_SUFFIX: "s8j12893u8912ue8912",
+};
 /**
  * @zh 如果希望兼容 3.3 之前的版本可以使用下方的代码
  * @en You can add the code below if you want compatibility with versions prior to 3.3
@@ -388,7 +392,7 @@ module.exports = Editor.Panel.define({
                                             }
                                             else if (typeEnum) {
                                                 // enum
-                                                value = "_TYPEENUM_prefix_s12w3e_" + typeEnum[0] + "." + value + "_TYPEENUM_suffix_d323e_";
+                                                value = CONST.TYPENUM_PREFIX + typeEnum[0] + "." + value + CONST.TYPENUM_SUFFIX;
                                             }
                                             else if (type === "number") {
                                                 value = Number(value);
@@ -421,7 +425,7 @@ module.exports = Editor.Panel.define({
                         });
                     });
                     let saveFileFullPath = path_1.default.join(this.rawConfigPath, "Config.ts");
-                    saveStr += JSON.stringify(jsSaveData).replace(`"_TYPEENUM_prefix_s12w3e_`, "").replace(`_TYPEENUM_suffix_d323e_"`, "");
+                    saveStr += JSON.stringify(jsSaveData);
                     let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
                         output: {
                             beautify: !this.isCompressJs,
@@ -433,7 +437,8 @@ module.exports = Editor.Panel.define({
                         this._addLog('error: ' + ret.error.message);
                     }
                     else if (ret.code) {
-                        fs.writeFile(saveFileFullPath, ret.code, "utf-8");
+                        const finalTxt = ret.code.replaceAll(`"` + CONST.TYPENUM_PREFIX, "").replaceAll(CONST.TYPENUM_SUFFIX + `"`, "");
+                        fs.writeFile(saveFileFullPath, finalTxt, "utf-8");
                         Editor.Message.send("asset-db", "refresh-asset", 'db://assets/');
                         this._addLog("[JavaScript]" + saveFileFullPath);
                     }
