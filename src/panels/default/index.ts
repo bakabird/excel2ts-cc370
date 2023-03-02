@@ -249,8 +249,8 @@ module.exports = Editor.Panel.define({
                                 let varName = title[i];
                                 let columDesc: string[] = desc[i].split("\n");
                                 let columType = type[i];
-                                let lowType = columType.toLowerCase();
-                                if (typeEnum.includes(lowType)) {
+                                const enumType = columType.match(/[^()]\w+(?=\))/)
+                                if (typeEnum.includes(columType) || enumType) {
                                     typeStr += "\n";
                                     if (columDesc.length < 2) {
                                         typeStr += `/** ${columDesc} */`
@@ -259,20 +259,24 @@ module.exports = Editor.Panel.define({
                                     }
                                     typeStr += "\n";
                                     typeStr += `${varName}:`
-                                    // columDesc == undefined ? "\n" : "//" + columDesc + "\n";
-                                    switch (lowType) {
-                                        case "string":
-                                            typeStr += `string;`;
-                                            break;
-                                        case "number":
-                                            typeStr += `number;`;
-                                            break;
-                                        case "list<number>":
-                                            typeStr += `Array<number>;`;
-                                            break;
-                                        case "list<string>":
-                                            typeStr += `Array<string>;`;
-                                            break;
+                                    if (!enumType) {
+                                        // columDesc == undefined ? "\n" : "//" + columDesc + "\n";
+                                        switch (columType) {
+                                            case "string":
+                                                typeStr += `string;`;
+                                                break;
+                                            case "number":
+                                                typeStr += `number;`;
+                                                break;
+                                            case "list<number>":
+                                                typeStr += `Array<number>;`;
+                                                break;
+                                            case "list<string>":
+                                                typeStr += `Array<string>;`;
+                                                break;
+                                        }
+                                    } else {
+                                        typeStr += enumType[0];
                                     }
                                 } else {
                                     this._addLog("[Error] 发现空单元格type:" + key + ":" + columType + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
@@ -343,8 +347,9 @@ module.exports = Editor.Panel.define({
                                         let key = sheetData.data[0][j];
                                         let value = sheetData.data[i][j];
                                         if (value !== undefined) {
-                                            let type = sheetData.data[2][j].toLowerCase();
+                                            let type = sheetData.data[2][j];
                                             let typeArray = type.match(/[^<]\w+(?=>)/);
+                                            let typeEnum = type.match(/[^()]\w+(?=\))/)
                                             if (typeArray) {
                                                 // number list
                                                 value = (value + "").split(",");
@@ -354,11 +359,14 @@ module.exports = Editor.Panel.define({
                                                         return pre;
                                                     }, []);
                                                 }
+                                            } else if (typeEnum) {
+                                                // enum
+                                                value = "_TYPEENUM_prefix_s12w3e_" + typeEnum[0] + "." + value + "_TYPEENUM_suffix_d323e_";
                                             } else if (type === "number") {
                                                 value = Number(value);
                                             } else if (type === "string") {
                                                 value = value + "";
-                                            } else {
+                                            } else if (type.match(/[^(]\w+(?=))/)) {
                                                 this._addLog("[Error] 发现空单元格type:" + sheetData.name + ":" + type + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
                                             }
                                         } else {
@@ -380,7 +388,7 @@ module.exports = Editor.Panel.define({
                         });
                     });
                     let saveFileFullPath = path.join(this.rawConfigPath, "Config.ts");
-                    saveStr += JSON.stringify(jsSaveData);
+                    saveStr += JSON.stringify(jsSaveData)
                     let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
                         output: {
                             beautify: !this.isCompressJs,//如果希望得到格式化的输出，传入true
@@ -391,7 +399,8 @@ module.exports = Editor.Panel.define({
                     if (ret.error) {
                         this._addLog('error: ' + ret.error.message);
                     } else if (ret.code) {
-                        fs.writeFile(saveFileFullPath, ret.code, "utf-8");
+                        const finalTxt = ret.code.replace(`"_TYPEENUM_prefix_s12w3e_`, "").replace(`_TYPEENUM_suffix_d323e_"`, "");
+                        fs.writeFile(saveFileFullPath, finalTxt, "utf-8");
                         Editor.Message.send("asset-db", "refresh-asset", 'db://assets/');
                         this._addLog("[JavaScript]" + saveFileFullPath);
                     }
@@ -417,18 +426,13 @@ module.exports = Editor.Panel.define({
                                 throw Error(sheetData.name + " matchRlt is Null");
                             }
                             let sheetName = matchRlt[0];
-                            //add datamanager
-                            //添加import内容------------
 
-                            // export let AIDatas: Array<AIData>;
-                            // export let AIDatasById: { [key: number]: AIData };
+                            //添加import内容------------
                             importContent += `import {${sheetName}Data} from "./ConfigTypeDefind";\n`;
                             defindContent += `public static ${sheetName}DatasArray: Array<${sheetName}Data>;\n`;
                             defindContent += `public static ${sheetName}DatasById: { [key in ${idType}]: ${sheetName}Data };\n`;
                             funcContent += `        this.${sheetName}DatasArray = this._arrayData("${sheetName}", datas);\n`;
                             funcContent += `        this.${sheetName}DatasById = datas["${sheetName}"];\n`;
-                            // AIDatas = datas["AI"];
-                            // AIDatasById = getsById<AIData>(AIDatas);
                         });
                     });
                     clazData = clazData.replace("@@import", importContent);

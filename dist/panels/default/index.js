@@ -157,43 +157,6 @@ module.exports = Editor.Panel.define({
                         }
                     });
                 },
-                // onBtnClickOpenExcelRootPath() {
-                //     if (fs.existsSync(this.excelRootPath)) {
-                //         Electron.shell.openPath(this.excelRootPath).then(err => {
-                //             Electron.shell.beep()
-                //         });
-                //     } else {
-                //         this._addLog("目录不存在：" + this.excelRootPath);
-                //     }
-                // },
-                // onBtnClickSelectExcelRootPath() {
-                //     Editor.Dialog.select({
-                //         title: "选择Excel的根目录",
-                //         // defaultPath: this.excelRootPath,
-                //         path: this.excelRootPath,
-                //         // properties: ['openDirectory'],
-                //         type: "directory",
-                //     }).then(res => {
-                //         if (!res.canceled && res.filePaths.length > 0) {
-                //             let dir = res.filePaths[0];
-                //             if (dir !== this.excelRootPath) {
-                //                 this.excelRootPath = dir;
-                //                 this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                //                 chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                //                 CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                //             }
-                //         }
-                //     })
-                //     // if (res !== -1) {
-                //     //     let dir = res[0];
-                //     //     if (dir !== this.excelRootPath) {
-                //     //         this.excelRootPath = dir;
-                //     //         this._addLog(`改动成功,检测并监视文件夹-----${this.excelRootPath}`);
-                //     //         chokidar.watch(this.excelRootPath).on('all', this._watchDir.bind(this));
-                //     //         CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
-                //     //     }
-                //     // }
-                // },
                 onConfirmConfigPath(dir) {
                     console.log("confirm config path: " + dir);
                     this.configPath = dir;
@@ -211,35 +174,6 @@ module.exports = Editor.Panel.define({
                     this.isCompressJs = event.target.value;
                     CfgUtil_1.default.saveCfgByData({ isCompressJs: this.isCompressJs });
                 },
-                // onBtnClickSelectConfigPath() {
-                //     Editor.Dialog.select({
-                //         title: "选择导出的配置目录",
-                //         path: Editor.Project.path,
-                //         // defaultPath: Editor.Project.path,
-                //         type: "directory",
-                //         // properties: ['openDirectory'],
-                //     }).then(res => {
-                //         if (!res.canceled && res.filePaths.length > 0) {
-                //             let dir = res.filePaths[0];
-                //             if (dir !== this.configPath) {
-                //                 this.configPath = dir;
-                //                 CfgUtil.saveCfgByData({ configPath: this.configPath });
-                //             }
-                //         }
-                //     });
-                //     // let res = Editor.Dialog.openFile({
-                //     //     title: "选择导出的配置目录",
-                //     //     defaultPath: Editor.Project.path,
-                //     //     properties: ['openDirectory'],
-                //     // });
-                //     // if (res !== -1) {
-                //     //     let dir = res[0];
-                //     //     if (dir !== this.configPath) {
-                //     //         this.configPath = dir;
-                //     //         CfgUtil.saveCfgByData({ configPath: this.configPath });
-                //     //     }
-                //     // }
-                // },
                 // 查找出目录下的所有excel文件
                 _onAnalyzeExcelDirPath(dir) {
                     if (dir) {
@@ -313,56 +247,6 @@ module.exports = Editor.Panel.define({
                         this.excelArray[k].isUse = b;
                     }
                 },
-                // onBtnClickOpenJsonSavePath() {
-                //     if (fs.existsSync(this.jsonSavePath)) {
-                //         Electron.shell.showItemInFolder(this.jsonSavePath);
-                //         Electron.shell.beep();
-                //     } else {
-                //         this._addLog("目录不存在：" + this.jsonSavePath);
-                //     }
-                // },
-                // onBtnClickOpenJsSavePath() {
-                //     if (fs.existsSync(this.configPath)) {
-                //         Electron.shell.openPath(this.configPath).then(ret => {
-                //             Electron.shell.beep();
-                //         });
-                //     } else {
-                //         this._addLog("目录不存在：" + this.configPath);
-                //     }
-                // },
-                // _getScriptSaveData(excelData: string[], itemSheet) {
-                //     let title = excelData[0];  //
-                //     let sheetFormatData = {};
-                //     let type = excelData[2];
-                //     for (let i = 3; i < excelData.length; i++) {
-                //         let lineData = excelData[i];
-                //         let saveLineData = {};
-                //         for (let j = 1; j < title.length; j++) {
-                //             let key = title[j];
-                //             let value = lineData[j];
-                //             if (value === undefined) {
-                //                 value = null;
-                //                 this._addLog("[Error] 发现空单元格:" + itemSheet.name + "*" + itemSheet.sheet + " => (" + key + "," + (i + 1) + ")");
-                //             } else if (type[j].toLowerCase().startsWith("list")) {
-                //                 value = value ? (value + "").split(",") : [];
-                //                 let innerType = type[j].toLowerCase().match(/[^<]\w+(?=>)/)[0];
-                //                 if (innerType === "number") {
-                //                     value = value.reduce((array, cur, index) => {
-                //                         array.push(Number(cur));
-                //                         return array;
-                //                     }, []);
-                //                 }
-                //             }
-                //             saveLineData[key] = value;
-                //         }
-                //         if (!lineData[0]) {
-                //             this._addLog("[Error] 发现id是空的单元格,将被忽略并跳过后面的数据:" + itemSheet.name + "*" + itemSheet.sheet);
-                //             break;
-                //         }
-                //         sheetFormatData[lineData[0].toString()] = saveLineData;
-                //     }
-                //     return sheetFormatData;
-                // },
                 /**
                  *
                  * @param {*} excelData
@@ -387,8 +271,8 @@ module.exports = Editor.Panel.define({
                                 let varName = title[i];
                                 let columDesc = desc[i].split("\n");
                                 let columType = type[i];
-                                let lowType = columType.toLowerCase();
-                                if (typeEnum.includes(lowType)) {
+                                const enumType = columType.match(/[^()]\w+(?=\))/);
+                                if (typeEnum.includes(columType) || enumType) {
                                     typeStr += "\n";
                                     if (columDesc.length < 2) {
                                         typeStr += `/** ${columDesc} */`;
@@ -398,20 +282,25 @@ module.exports = Editor.Panel.define({
                                     }
                                     typeStr += "\n";
                                     typeStr += `${varName}:`;
-                                    // columDesc == undefined ? "\n" : "//" + columDesc + "\n";
-                                    switch (lowType) {
-                                        case "string":
-                                            typeStr += `string;`;
-                                            break;
-                                        case "number":
-                                            typeStr += `number;`;
-                                            break;
-                                        case "list<number>":
-                                            typeStr += `Array<number>;`;
-                                            break;
-                                        case "list<string>":
-                                            typeStr += `Array<string>;`;
-                                            break;
+                                    if (!enumType) {
+                                        // columDesc == undefined ? "\n" : "//" + columDesc + "\n";
+                                        switch (columType) {
+                                            case "string":
+                                                typeStr += `string;`;
+                                                break;
+                                            case "number":
+                                                typeStr += `number;`;
+                                                break;
+                                            case "list<number>":
+                                                typeStr += `Array<number>;`;
+                                                break;
+                                            case "list<string>":
+                                                typeStr += `Array<string>;`;
+                                                break;
+                                        }
+                                    }
+                                    else {
+                                        typeStr += enumType[0];
                                     }
                                 }
                                 else {
@@ -484,8 +373,9 @@ module.exports = Editor.Panel.define({
                                         let key = sheetData.data[0][j];
                                         let value = sheetData.data[i][j];
                                         if (value !== undefined) {
-                                            let type = sheetData.data[2][j].toLowerCase();
+                                            let type = sheetData.data[2][j];
                                             let typeArray = type.match(/[^<]\w+(?=>)/);
+                                            let typeEnum = type.match(/[^()]\w+(?=\))/);
                                             if (typeArray) {
                                                 // number list
                                                 value = (value + "").split(",");
@@ -496,13 +386,17 @@ module.exports = Editor.Panel.define({
                                                     }, []);
                                                 }
                                             }
+                                            else if (typeEnum) {
+                                                // enum
+                                                value = "_TYPEENUM_prefix_s12w3e_" + typeEnum[0] + "." + value + "_TYPEENUM_suffix_d323e_";
+                                            }
                                             else if (type === "number") {
                                                 value = Number(value);
                                             }
                                             else if (type === "string") {
                                                 value = value + "";
                                             }
-                                            else {
+                                            else if (type.match(/[^(]\w+(?=))/)) {
                                                 this._addLog("[Error] 发现空单元格type:" + sheetData.name + ":" + type + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
                                             }
                                         }
@@ -527,7 +421,7 @@ module.exports = Editor.Panel.define({
                         });
                     });
                     let saveFileFullPath = path_1.default.join(this.rawConfigPath, "Config.ts");
-                    saveStr += JSON.stringify(jsSaveData);
+                    saveStr += JSON.stringify(jsSaveData).replace(`"_TYPEENUM_prefix_s12w3e_`, "").replace(`_TYPEENUM_suffix_d323e_"`, "");
                     let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
                         output: {
                             beautify: !this.isCompressJs,
@@ -564,17 +458,12 @@ module.exports = Editor.Panel.define({
                                 throw Error(sheetData.name + " matchRlt is Null");
                             }
                             let sheetName = matchRlt[0];
-                            //add datamanager
                             //添加import内容------------
-                            // export let AIDatas: Array<AIData>;
-                            // export let AIDatasById: { [key: number]: AIData };
                             importContent += `import {${sheetName}Data} from "./ConfigTypeDefind";\n`;
                             defindContent += `public static ${sheetName}DatasArray: Array<${sheetName}Data>;\n`;
                             defindContent += `public static ${sheetName}DatasById: { [key in ${idType}]: ${sheetName}Data };\n`;
                             funcContent += `        this.${sheetName}DatasArray = this._arrayData("${sheetName}", datas);\n`;
                             funcContent += `        this.${sheetName}DatasById = datas["${sheetName}"];\n`;
-                            // AIDatas = datas["AI"];
-                            // AIDatasById = getsById<AIData>(AIDatas);
                         });
                     });
                     clazData = clazData.replace("@@import", importContent);
@@ -588,30 +477,6 @@ module.exports = Editor.Panel.define({
         });
         app.mount(this.$.app);
         panelDataMap.set(this, app);
-        // if (this.$.text) {
-        //     this.$.text.innerHTML = 'Hello Cocos.';
-        // }
-        // if (this.$.app) {
-        //     const app = createApp({});
-        //     app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith('ui-');
-        //     app.component('MyCounter', {
-        //         template: readFileSync(join(__dirname, '../../../static/template/vue/counter.html'), 'utf-8'),
-        //         data() {
-        //             return {
-        //                 counter: 0,
-        //             };
-        //         }, methods: {
-        //             addition() {
-        //                 this.counter += 1;
-        //             },
-        //             subtraction() {
-        //                 this.counter -= 1;
-        //             },
-        //         },
-        //     });
-        //     app.mount(this.$.app);
-        //     panelDataMap.set(this, app);
-        // }
     },
     beforeClose() { },
     close() {
