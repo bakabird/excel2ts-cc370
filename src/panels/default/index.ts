@@ -5,6 +5,7 @@ import * as nodeXlsx from 'node-xlsx';
 import path from 'path';
 import { App, createApp, ref } from 'vue';
 import CfgUtil from '../../CfgUtil';
+import ExcelDealreCore from './core';
 const uglifyJs = require("uglify-js")
 
 type ExcelCache = Record<string, {
@@ -20,6 +21,7 @@ const CONST = {
     TYPENUM_PREFIX: "wqidhd98213uhj89wqe",
     TYPENUM_SUFFIX: "s8j12893u8912ue8912",
 }
+const core = new ExcelDealreCore();
 /**
  * @zh 如果希望兼容 3.3 之前的版本可以使用下方的代码
  * @en You can add the code below if you want compatibility with versions prior to 3.3
@@ -106,6 +108,14 @@ module.exports = Editor.Panel.define({
                 }
             },
             methods: {
+                _corewatch() {
+                    core.watch(this.rawExcelRootPath, (log) => {
+                        this._addLog(log);
+                    }, (arr) => {
+                        this.excelArray = arr;
+                    })
+                },
+
                 _addLog(str: string) {
                     let time = new Date();
                     this.logView += "[" + time.toLocaleString() + "]: " + str + "\n";
@@ -119,8 +129,27 @@ module.exports = Editor.Panel.define({
                         this._onAnalyzeExcelDirPath(this.rawExcelRootPath);
                     }
                 },
-
                 _initPluginCfg() {
+                    CfgUtil.initCfg((data) => {
+                        this.tsDir.protocol = "project"
+                        this.excelDir.protocol = "project"
+                        if (data) {
+                            this.excelRootPath = data.excelRootPath;
+                            this.configPath = data.configPath || "project://";
+                            this.isCompressJs = data.isCompressJs || false;
+                            console.log(this.excelRootPath)
+                            console.log(this.rawExcelRootPath)
+                            if (this.excelRootPath && fs.existsSync(this.rawExcelRootPath)) {
+                                this._addLog(`检测并监视文件夹-----${this.rawExcelRootPath}`);
+                                this._corewatch();
+                            }
+
+                            this.tsDir.value = this.configPath;
+                            this.excelDir.value = this.excelRootPath;
+                        }
+                    });
+                },
+                _initPluginCfg2() {
                     CfgUtil.initCfg((data) => {
                         this.tsDir.protocol = "project"
                         this.excelDir.protocol = "project"
@@ -146,6 +175,13 @@ module.exports = Editor.Panel.define({
                     CfgUtil.saveCfgByData({ configPath: this.configPath });
                 },
                 onConfirmExcelRootPath(dir: string) {
+                    console.log("confirm excel root path: " + dir);
+                    this.excelRootPath = dir;
+                    CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
+                    this._addLog(`改动成功,检测并监视文件夹-----${this.rawExcelRootPath}`);
+                    this._corewatch();
+                },
+                onConfirmExcelRootPath2(dir: string) {
                     console.log("confirm excel root path: " + dir);
                     this.excelRootPath = dir;
                     CfgUtil.saveCfgByData({ excelRootPath: this.excelRootPath });
@@ -307,26 +343,33 @@ module.exports = Editor.Panel.define({
                     // fs.emptyDirSync(this.rawConfigPath);
                     // let jsSaveData = {};// 保存的js数据
                     this._addLog("excel 数量:" + this.excelArray.length);
-                    //选取第一个sheet
-                    let excelCache: ExcelCache = {};
-                    for (let k = 0; k < this.excelArray.length; k++) {
-                        let itemSheet = this.excelArray[k];
+                    const filtered = this.excelArray.filter((itemSheet: any) => {
                         if (itemSheet.isUse) {
-                            let excelData = excelCache[itemSheet.fullPath];
-                            if (!excelData) {
-                                excelData = nodeXlsx.parse(itemSheet.fullPath);
-                                excelCache[itemSheet.fullPath] = excelData;
-                            }
+                            return true;
                         } else {
                             console.log("忽略配置: " + itemSheet.fullPath + ' - ' + itemSheet.sheet);
+                            return false;
                         }
-                    }
-                    //添加ts 类型
-                    this._saveTypeInter(excelCache);
-                    //添加dataManager定义
-                    this.addAsType(excelCache);
-                    this.addMainDatas(excelCache);
-                    // let saveStr = "export let  datas =  " +  JSON.stringify(jsSaveData) + ";";
+                    })
+
+                    let dmUrl = joinPack("model/Xls.ts");
+                    // let dmUrl = Editor.url('packages://' + packageName + '//model//DataManager.ts', 'utf8');
+                    let clazData = fs.readFileSync(dmUrl, { encoding: "utf-8" });
+
+                    let {
+                        typeInterface,
+                        dataManager,
+                        datas,
+                    } = core.gen(filtered, this.isCompressJs, clazData);
+
+                    const beautifier = new TsBeautifier();
+                    typeInterface = beautifier.Beautify(typeInterface)!;
+                    const dataFileFullPath = path.join(this.rawConfigPath, "Config.ts");
+                    fs.writeFileSync(path.join(this.rawConfigPath, "ConfigTypeDefind.ts"), typeInterface);
+                    fs.writeFileSync(path.join(this.rawConfigPath, "Xls.ts"), dataManager);
+                    fs.writeFileSync(dataFileFullPath, datas, "utf-8");
+                    Editor.Message.send("asset-db", "refresh-asset", 'db://assets/');
+                    this._addLog("[JavaScript]" + dataFileFullPath);
                     this._addLog("全部转换完成!");
                 },
                 addMainDatas(excelCache: ExcelCache) {
