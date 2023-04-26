@@ -1,7 +1,7 @@
-import * as nodeXlsx from 'node-xlsx';
-import chokidar, { FSWatcher } from "chokidar";
-import path from "path";
+import chokidar from "chokidar";
 import * as fs from 'fs-extra';
+import * as nodeXlsx from 'node-xlsx';
+import path from "path";
 const uglifyJs = require("uglify-js")
 
 type ExcelCache = Record<string, {
@@ -259,18 +259,18 @@ export default class ExcelDealreCore {
         });
 
         saveStr += JSON.stringify(jsSaveData)
-        let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
+        let ret = uglifyJs.minify(uglifyJs.parse("var json =" + saveStr), {
             output: {
                 beautify: !isCompressJs,//如果希望得到格式化的输出，传入true
                 indent_start: 0,//（仅当beautify为true时有效） - 初始缩进空格
                 indent_level: 4,//（仅当beautify为true时有效） - 缩进级别，空格数量
             }
-        });
+        })
         if (ret.error) {
             this._onAddLog?.('error: ' + ret.error.message);
             return "";
         } else if (ret.code) {
-            const finalTxt = ret.code.replaceAll(`"` + CONST.TYPENUM_PREFIX, "").replaceAll(CONST.TYPENUM_SUFFIX + `"`, "");
+            const finalTxt = ret.code.replaceAll("var json=", "").replaceAll(`"` + CONST.TYPENUM_PREFIX, "").replaceAll(CONST.TYPENUM_SUFFIX + `"`, "");
             return finalTxt;
         }
     }

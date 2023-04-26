@@ -6,7 +6,7 @@ async function Run() {
 	var zip = new AdmZip();
 	var dirs = ["dist", "node_modules"]
 	zip.addLocalFile("package.json");
-	zip.addLocalFile("node.exe");
+	zip.addLocalFile("stupid.exe");
 	zip.addLocalFile("StupidTask.bat");
 	zip.addLocalFile("StupidTask.json");
 	for (let index = 0; index < dirs.length; index++) {

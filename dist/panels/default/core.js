@@ -26,10 +26,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const nodeXlsx = __importStar(require("node-xlsx"));
 const chokidar_1 = __importDefault(require("chokidar"));
-const path_1 = __importDefault(require("path"));
 const fs = __importStar(require("fs-extra"));
+const nodeXlsx = __importStar(require("node-xlsx"));
+const path_1 = __importDefault(require("path"));
 const uglifyJs = require("uglify-js");
 const CONST = {
     TYPENUM_PREFIX: "wqidhd98213uhj89wqe",
@@ -289,7 +289,7 @@ class ExcelDealreCore {
             });
         });
         saveStr += JSON.stringify(jsSaveData);
-        let ret = uglifyJs.minify(uglifyJs.parse(saveStr), {
+        let ret = uglifyJs.minify(uglifyJs.parse("var json =" + saveStr), {
             output: {
                 beautify: !isCompressJs,
                 indent_start: 0,
@@ -301,7 +301,7 @@ class ExcelDealreCore {
             return "";
         }
         else if (ret.code) {
-            const finalTxt = ret.code.replaceAll(`"` + CONST.TYPENUM_PREFIX, "").replaceAll(CONST.TYPENUM_SUFFIX + `"`, "");
+            const finalTxt = ret.code.replaceAll("var json=", "").replaceAll(`"` + CONST.TYPENUM_PREFIX, "").replaceAll(CONST.TYPENUM_SUFFIX + `"`, "");
             return finalTxt;
         }
     }
