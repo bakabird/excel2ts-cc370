@@ -1,0 +1,4 @@
+{
+    "excelRoot": "./excels",
+    "tsOutput": "./assets/main/index.js"
+}

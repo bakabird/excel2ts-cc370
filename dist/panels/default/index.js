@@ -385,7 +385,7 @@ module.exports = Editor.Panel.define({
                     const dataFileFullPath = path_1.default.join(this.rawConfigPath, "Config.ts");
                     fs.writeFileSync(path_1.default.join(this.rawConfigPath, "ConfigTypeDefind.ts"), typeInterface);
                     fs.writeFileSync(path_1.default.join(this.rawConfigPath, "Xls.ts"), dataManager);
-                    fs.writeFileSync(dataFileFullPath, datas, "utf-8");
+                    fs.writeFileSync(dataFileFullPath, "export default " + datas, "utf-8");
                     Editor.Message.send("asset-db", "refresh-asset", 'db://assets/');
                     this._addLog("[JavaScript]" + dataFileFullPath);
                     this._addLog("全部转换完成!");
@@ -435,7 +435,7 @@ module.exports = Editor.Panel.define({
                                             else if (type === "string") {
                                                 value = value + "";
                                             }
-                                            else if (type.match(/[^(]\w+(?=))/)) {
+                                            else {
                                                 this._addLog("[Error] 发现空单元格type:" + sheetData.name + ":" + type + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
                                             }
                                         }

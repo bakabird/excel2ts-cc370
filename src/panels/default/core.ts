@@ -33,9 +33,11 @@ export default class ExcelDealreCore {
         this._lastWatch?.removeAllListeners()
         this._lastWatch = chokidar.watch(this.rawExcelRootPath)
         this._lastWatch.on('all', this._watchDir.bind(this));
+        this._onAddLog?.("watch " + excelRootPath);
     }
 
     _watchDir(event: string, filePath: string) {
+        this._onAddLog?.("_watchDir " + filePath);
         let ext = path.extname(filePath);
         if (ext === ".xlsx" || ext === ".xls") {
             const sheetArray = this._onAnalyzeExcelDirPath(this.rawExcelRootPath);

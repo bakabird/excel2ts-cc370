@@ -41,20 +41,22 @@ class ExcelDealreCore {
         console.log('ExcelDealreCore');
     }
     watch(excelRootPath, onAddLog, onUpdateExcelSheetArray) {
-        var _a;
+        var _a, _b;
         this.rawExcelRootPath = excelRootPath;
         this._onAddLog = onAddLog;
         this._onUpdateExcelSheetArray = onUpdateExcelSheetArray;
         (_a = this._lastWatch) === null || _a === void 0 ? void 0 : _a.removeAllListeners();
         this._lastWatch = chokidar_1.default.watch(this.rawExcelRootPath);
         this._lastWatch.on('all', this._watchDir.bind(this));
+        (_b = this._onAddLog) === null || _b === void 0 ? void 0 : _b.call(this, "watch " + excelRootPath);
     }
     _watchDir(event, filePath) {
-        var _a;
+        var _a, _b;
+        (_a = this._onAddLog) === null || _a === void 0 ? void 0 : _a.call(this, "_watchDir " + filePath);
         let ext = path_1.default.extname(filePath);
         if (ext === ".xlsx" || ext === ".xls") {
             const sheetArray = this._onAnalyzeExcelDirPath(this.rawExcelRootPath);
-            (_a = this._onUpdateExcelSheetArray) === null || _a === void 0 ? void 0 : _a.call(this, sheetArray);
+            (_b = this._onUpdateExcelSheetArray) === null || _b === void 0 ? void 0 : _b.call(this, sheetArray);
         }
     }
     // 查找出目录下的所有excel文件
@@ -217,7 +219,7 @@ class ExcelDealreCore {
     }
     _genDatas(excelCache, isCompressJs) {
         var _a;
-        let saveStr = "export default ";
+        let saveStr = "";
         let jsSaveData = {};
         Object.getOwnPropertyNames(excelCache).forEach(key => {
             // 保存为ts
@@ -262,7 +264,7 @@ class ExcelDealreCore {
                                 else if (type === "string") {
                                     value = value + "";
                                 }
-                                else if (type.match(/[^(]\w+(?=))/)) {
+                                else {
                                     (_a = this._onAddLog) === null || _a === void 0 ? void 0 : _a.call(this, "[Error] 发现空单元格type:" + sheetData.name + ":" + type + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
                                 }
                             }
