@@ -194,7 +194,7 @@ export default class ExcelDealreCore {
         return typeStr;
     }
     _genDatas(excelCache: ExcelCache, isCompressJs: boolean) {
-        let saveStr = "export default ";
+        let saveStr = "";
         let jsSaveData: any = {};
         Object.getOwnPropertyNames(excelCache).forEach(key => {
             // 保存为ts
@@ -234,7 +234,7 @@ export default class ExcelDealreCore {
                                     value = Number(value);
                                 } else if (type === "string") {
                                     value = value + "";
-                                } else if (type.match(/[^(]\w+(?=))/)) {
+                                } else {
                                     this._onAddLog?.("[Error] 发现空单元格type:" + sheetData.name + ":" + type + " =>类型不符合枚举值 [string] [number] [list<string>] [list<number>]");
                                 }
                             } else {
