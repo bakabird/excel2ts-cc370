@@ -12,6 +12,11 @@ import http from "http"
 const myCore = new core();
 const originOutput = fs.readFileSync(StupidTask.tsOutput, 'utf-8');
 
+// @ts-ignore
+String.prototype.replaceAll = function (searcher, replacer) {
+    return this.split(searcher).join(replacer);
+}
+
 function replaceData(newData: string): string {
     let lineStart = 0;
     let state = 0;

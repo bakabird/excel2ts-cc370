@@ -48,6 +48,27 @@ export default class ExcelDealreCore {
     // 查找出目录下的所有excel文件
     _onAnalyzeExcelDirPath(dir: string) {
         if (dir) {
+            var readDirSync = (dirPath: string) => {
+                let dirInfo = fs.readdirSync(dirPath);
+                for (let i = 0; i < dirInfo.length; i++) {
+                    let item = dirInfo[i];
+                    let itemFullPath = path.join(dirPath, item);
+                    let info = fs.statSync(itemFullPath);
+                    if (info.isDirectory()) {
+                        // this._addLog('dir: ' + itemFullPath);
+                        readDirSync(itemFullPath);
+                    } else if (info.isFile()) {
+                        let headStr = item.substr(0, 2);
+                        if (headStr === "~$") {
+                            self._onAddLog?.("检索到excel产生的临时文件:" + itemFullPath);
+                        } else {
+                            allFileArr.push(itemFullPath);
+                        }
+                        // this._addLog('file: ' + itemFullPath);
+                    }
+                }
+            }
+
             let self = this;
             // 查找json文件
             let allFileArr: string[] = [];
@@ -85,26 +106,7 @@ export default class ExcelDealreCore {
                     excelSheetArray.push(itemData);
                 }
             }
-            function readDirSync(dirPath: string) {
-                let dirInfo = fs.readdirSync(dirPath);
-                for (let i = 0; i < dirInfo.length; i++) {
-                    let item = dirInfo[i];
-                    let itemFullPath = path.join(dirPath, item);
-                    let info = fs.statSync(itemFullPath);
-                    if (info.isDirectory()) {
-                        // this._addLog('dir: ' + itemFullPath);
-                        readDirSync(itemFullPath);
-                    } else if (info.isFile()) {
-                        let headStr = item.substr(0, 2);
-                        if (headStr === "~$") {
-                            self._onAddLog?.("检索到excel产生的临时文件:" + itemFullPath);
-                        } else {
-                            allFileArr.push(itemFullPath);
-                        }
-                        // this._addLog('file: ' + itemFullPath);
-                    }
-                }
-            }
+
             return excelSheetArray;
         }
         return [];
